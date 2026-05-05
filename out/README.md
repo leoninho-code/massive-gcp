@@ -14,7 +14,7 @@ Dans le cadre de ce projet, nous avons réalisé deux expériences de charge (be
 
 Pour ce test, la base contient **50 000 posts** répartis sur 1000 utilisateurs (20 abonnements par utilisateur). Le trafic concurrent a varié de 1 à 1000 utilisateurs simultanés.
 
-![Graphique de Concurrence](out/conc.png)
+![Graphique de Concurrence](conc.png)
 
 **Interprétation :**
 Les temps de réponse restent globalement acceptables sous une charge modérée (autour de 200-300ms jusqu'à 100 utilisateurs). Cependant, lors du pic massif à 1000 utilisateurs simultanés, le temps moyen s'effondre (plus de 2,5 secondes en moyenne, avec des pics initiaux très longs) et le système génère des erreurs (HTTP 500). Les instances App Engine de base saturent sous le volume de connexions et les temps d'attente réseau vers le Datastore explosent. L'auto-scaler tente de compenser en créant de nombreuses instances (jusqu'à 12), mais la surcharge initiale due au cold start est inévitable.
@@ -25,7 +25,7 @@ Les temps de réponse restent globalement acceptables sous une charge modérée 
 
 Ici, nous avons fixé la charge de trafic à 50 utilisateurs concurrents, mais nous avons doublé la taille de la base (**100 000 posts**) et fait varier le nombre d'abonnements ("followees") : 20, 40, puis 60.
 
-![Graphique de Fan-out](out/fanout.png)
+![Graphique de Fan-out](fanout.png)
 
 **Interprétation :**
 C'est ici que l'anti-pattern majeur de l'architecture se révèle. L'application utilise la méthode du **"Fan-out on Read"** : pour construire une timeline, elle exécute une clause `IN` demandant au Datastore de récupérer tous les posts de *tous* les abonnements à la volée, puis elle les trie en mémoire sur le serveur.
